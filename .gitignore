@@ -1,0 +1,12 @@
+# WebdriverIO
+.wdio/session/
+
+# Dependencies
+node_modules/
+
+# Environment variables
+.env
+.env.*
+
+# AI agents
+agents/
