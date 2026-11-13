@@ -2,6 +2,10 @@ import BasePage from './base.page.js';
 
 class LoginPage extends BasePage {
 
+    constructor() {
+        super('/auth/login');
+    }
+
     get loginForm() {
         return $('[data-test="login-form"]');
     }
@@ -18,16 +22,23 @@ class LoginPage extends BasePage {
         return $('[data-test="login-submit"]');
     }
 
-    async open() {
-        await super.open('/auth/login');
-        await this.loginForm.waitForDisplayed();
+    async waitForLoaded() {
+        await this.loginForm.waitForDisplayed({
+            timeout: 15000,
+            timeoutMsg: 'Login form did not load'
+        });
     }
 
     async signIn(email, password) {
         await this.emailInput.setValue(email);
         await this.passwordInput.setValue(password);
-
         await this.loginButton.click();
+    }
+
+    async loginAs(user) {
+        await this.open();
+        await this.waitForLoaded();
+        await this.signIn(user.email, user.password);
     }
 }
 

@@ -1,4 +1,3 @@
-
 import {
   assert,
   expect as chaiExpect,
@@ -31,7 +30,7 @@ describe('Sign in with a registered user', () => {
       const credentials = getUserByAlias(user);
 
       // 2. Open login page
-      await LoginPage.open();
+      await LoginPage.waitForLoaded();
 
       assert.isTrue(
         await LoginPage.loginForm.isDisplayed()
@@ -42,12 +41,19 @@ describe('Sign in with a registered user', () => {
         credentials.email,
         credentials.password
       );
+      await AccountPage.waitForLoginResult();
 
-      // 4. Verify account page
-      const accountPageDisplayed =
-        await AccountPage.isDisplayed();
+      const isOnAccountPage =
+        await AccountPage.isOnAccountPage();
 
-      assert.isTrue(accountPageDisplayed);
+      assert.isTrue(
+        isOnAccountPage,
+        isOnAccountPage
+          ? ''
+          : await AccountPage.getLoginDiagnostics()
+      );
+
+
 
       // 5. Verify full name in account menu
       const actualFullName =

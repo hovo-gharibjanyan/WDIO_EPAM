@@ -2,8 +2,8 @@ import BasePage from './base.page.js';
 
 class AccountPage extends BasePage {
 
-    get accountMenu() {
-        return $('[data-test="nav-menu"]');
+    constructor() {
+        super('/account');
     }
 
     get loginError() {
@@ -14,48 +14,55 @@ class AccountPage extends BasePage {
         return $('[data-test="totp-code"]');
     }
 
-    async isDisplayed() {
-
-        try {
-            await browser.waitUntil(
-                async () => {
-
-                    const url = await browser.getUrl();
-                    const path = new URL(url).pathname;
-
-                    const hasError =
-                        await this.loginError.isDisplayed();
-
-                    const requiresTotp =
-                        await this.totpInput.isDisplayed();
-
-                    return (
-                        path === '/account' ||
-                        hasError ||
-                        requiresTotp
-                    );
-
-                },
-                {
-                    timeout: 15000,
-                    timeoutMsg: 'Login result did not appear'
-                }
-            );
-        } catch {
-            // Continue to collect diagnostic information
-        }
-
+    async isOnAccountPage() {
         const currentUrl = await browser.getUrl();
         const path = new URL(currentUrl).pathname;
 
-        if (path === '/account') {
-            return true;
-        }
+        return path === this.path;
+    }
 
-        const errorMessage =
-            await this.loginError.isDisplayed()
-                ? await this.loginError.getText()
-                : 'No login error displayed';
+    async waitForLoginResult() {
+        await browser.waitUntil(
+            async () => {
+                const isAccountPage =
+                    await this.isOnAccountPage();
+
+                const hasLoginError =
+                    await this.loginError.isDisplayed();
+
+                const requiresTotp =
+                    await this.totpInput.isDisplayed();
+
+                return (
+                    isAccountPage ||
+                    hasLoginError ||
+                    requiresTotp
+                );
+            },
+            {
+                timeout: 15000,
+                timeoutMsg: 'Login result did not appear'
+            }
+        );
+    }
+
+    async getLoginErrorMessage() {
+        await this.loginError.waitForDisplayed({
+            timeout: 10000
+        });
+
+        return await this.getTrimmedText(this.loginError);
+    }
+
+    async getLoginDiagnostics() {
+        const currentUrl = await browser.getUrl();
+
+        const hasLoginError =
+            await this.loginError.isDisplayed();
+
+        const errorMessage = hasLoginError
+            ? await this.getLoginErrorMessage()
+            : 'No login error displayed';
 
         const requiresTotp =
             await this.totpInput.isDisplayed();
@@ -64,7 +71,7 @@ class AccountPage extends BasePage {
             () => Boolean(localStorage.getItem('auth-token'))
         );
 
-        throw new Error(
+        return (
             '\nLOGIN DIAGNOSTICS:\n' +
             `Current URL: ${currentUrl}\n` +
             `Login error: ${errorMessage}\n` +
@@ -74,17 +81,8 @@ class AccountPage extends BasePage {
     }
 
     async getFullName() {
-
-        await this.accountMenu.waitForDisplayed({
-            timeout: 15000,
-            timeoutMsg: 'Account menu did not appear'
-        });
-
-        return (
-            await this.accountMenu.getText()
-        ).trim();
+        return await this.header.getUserName();
     }
-
 }
 
 export default new AccountPage();

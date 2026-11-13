@@ -36,15 +36,18 @@ describe('Add a product that is already in favorites', () => {
       // STEP 1: Login
       const user = getUserByAlias('standard_user');
 
-      await LoginPage.open();
+      await LoginPage.loginAs(user);
 
-      await LoginPage.signIn(
-        user.email,
-        user.password
+      await AccountPage.waitForLoginResult();
+
+      const isLoggedIn = await AccountPage.isOnAccountPage();
+
+      assert.isTrue(
+        isLoggedIn,
+        isLoggedIn
+          ? ''
+          : await AccountPage.getLoginDiagnostics()
       );
-
-      assert.isTrue(await AccountPage.isDisplayed());
-
       // STEP 2: Check initial favorites
       await FavoritesPage.open();
 

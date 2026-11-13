@@ -30,13 +30,20 @@ describe('Add a new product to favorites', () => {
 
     it(`should add ${product} to favorites`, async () => {
 
-      // 1. Login
+      // 1. Sign in as a registered user
       const user = getUserByAlias('standard_user');
 
-      await LoginPage.open();
-      await LoginPage.signIn(user.email, user.password);
+      await LoginPage.loginAs(user);
+      await AccountPage.waitForLoginResult();
 
-      assert.isTrue(await AccountPage.isDisplayed());
+      const isLoggedIn = await AccountPage.isOnAccountPage();
+
+      assert.isTrue(
+        isLoggedIn,
+        isLoggedIn
+          ? ''
+          : await AccountPage.getLoginDiagnostics()
+      );
 
       // 2. Ensure product is not already in favorites
       await FavoritesPage.open();
