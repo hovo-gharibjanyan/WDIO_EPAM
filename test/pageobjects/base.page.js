@@ -1,6 +1,13 @@
+import Header from '../components/header.component.js';
+
 export default class BasePage {
 
-    async open(path) {
+    constructor(path = '/') {
+        this.path = path;
+        this.header = new Header();
+    }
+
+    async open(path = this.path) {
         await browser.url(path);
     }
 
@@ -8,4 +15,7 @@ export default class BasePage {
         return await browser.getUrl();
     }
 
+    async getTrimmedText(element) {
+        return (await element.getText()).trim();
+    }
 }
