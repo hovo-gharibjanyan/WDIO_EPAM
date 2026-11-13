@@ -102,7 +102,7 @@ describe('Complete checkout as a guest', () => {
     // =========================
 
     const invoiceNumber =
-      await CheckoutPage.payWithCashOnDelivery();
+    await CheckoutPage.pay('cashOnDelivery');
 
     // =========================
     // STEP 7: ASSERTIONS

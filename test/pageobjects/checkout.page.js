@@ -1,5 +1,7 @@
 import BasePage from './base.page.js';
-
+const PAYMENT_METHODS = {
+    cashOnDelivery: 'cash-on-delivery'
+};
 class CheckoutPage extends BasePage {
 
     // ELEMENTS
@@ -48,6 +50,42 @@ class CheckoutPage extends BasePage {
         return $('#order-confirmation span');
     }
 
+
+    // BILLING ADDRESS LOCATORS
+
+    get countryInput() {
+        return $('[data-test="country"]');
+    }
+
+    get postalCodeInput() {
+        return $('[data-test="postal_code"]');
+    }
+
+    get houseNumberInput() {
+        return $('[data-test="house_number"]');
+    }
+
+    get streetInput() {
+        return $('[data-test="street"]');
+    }
+
+    get cityInput() {
+        return $('[data-test="city"]');
+    }
+
+    get stateInput() {
+        return $('[data-test="state"]');
+    }
+
+    get postcodeLookupError() {
+        return $('[data-test="postcode-lookup-error"]');
+    }
+
+    get postcodeLookupLoading() {
+        return $('[data-test="postcode-lookup-loading"]');
+    }
+
+
     // GUEST CHECKOUT
 
     async continueAsGuest({ email, firstName, lastName }) {
@@ -68,55 +106,64 @@ class CheckoutPage extends BasePage {
 
     // BILLING ADDRESS
 
-    async fillBillingAddress(address) {
 
-        const countryInput = $('[data-test="country"]');
-        const postalCodeInput = $('[data-test="postal_code"]');
-        const houseNumberInput = $('[data-test="house_number"]');
 
-        await countryInput.waitForDisplayed();
+    // =========================
+    // BILLING ADDRESS
+    // =========================
 
-        await countryInput.selectByAttribute(
+    /**
+     * Enter address information for postcode lookup.
+     *
+     * @param {Object} address
+     * @param {string} address.country
+     * @param {string} address.postalCode
+     * @param {string} address.houseNumber
+     */
+    async enterAddressLookupData(address) {
+
+        await this.countryInput.waitForDisplayed();
+
+        await this.countryInput.selectByAttribute(
             'value',
             address.country
         );
 
-        await postalCodeInput.setValue(
+        await this.postalCodeInput.setValue(
             address.postalCode
         );
 
-        await houseNumberInput.setValue(
+        await this.houseNumberInput.setValue(
             address.houseNumber
         );
+    }
+
+    /**
+     * Wait until address fields are automatically filled.
+     */
+    async waitForAddressAutofill() {
 
         await browser.waitUntil(
             async () => {
 
-                const lookupError = $(
-                    '[data-test="postcode-lookup-error"]'
-                );
-
-                if (await lookupError.isExisting()) {
+                if (await this.postcodeLookupError.isExisting()) {
                     throw new Error(
-                        `Address lookup failed: ${await lookupError.getText()}`
+                        'Address lookup failed: ' +
+                        await this.postcodeLookupError.getText()
                     );
                 }
 
-                const loading = await $(
-                    '[data-test="postcode-lookup-loading"]'
-                ).isExisting();
+                const loading =
+                    await this.postcodeLookupLoading.isExisting();
 
-                const street = await $(
-                    '[data-test="street"]'
-                ).getValue();
+                const street =
+                    await this.streetInput.getValue();
 
-                const city = await $(
-                    '[data-test="city"]'
-                ).getValue();
+                const city =
+                    await this.cityInput.getValue();
 
-                const state = await $(
-                    '[data-test="state"]'
-                ).getValue();
+                const state =
+                    await this.stateInput.getValue();
 
                 return (
                     !loading &&
@@ -128,103 +175,198 @@ class CheckoutPage extends BasePage {
             },
             {
                 timeout: 20000,
-                timeoutMsg: 'Billing address was not filled automatically'
+                timeoutMsg:
+                    'Billing address was not filled automatically'
             }
         );
+    }
+
+    /**
+     * Fill billing address and proceed to payment.
+     *
+     * @param {Object} address
+     * @param {string} address.country
+     * @param {string} address.postalCode
+     * @param {string} address.houseNumber
+     */
+    async fillBillingAddress(address) {
+
+        await this.enterAddressLookupData(address);
+
+        await this.waitForAddressAutofill();
 
         await this.proceedAddress.waitForClickable();
+
         await this.proceedAddress.click();
     }
 
+
+
     // DIAGNOSTICS
 
-    async getCheckoutDiagnostics() {
+    
+async getCheckoutDiagnostics() {
+    return await browser.execute(() => {
 
-        return await browser.execute(() => {
+        const confirmation = document.querySelector(
+            '#order-confirmation'
+        );
 
-            const confirmation = document.querySelector(
-                '#order-confirmation'
-            );
+        const invoice = document.querySelector(
+            '#order-confirmation span'
+        );
 
-            const invoice = document.querySelector(
-                '#invoice-number'
-            );
+        const paymentError = document.querySelector(
+            '[data-test="payment-error-message"]'
+        );
 
-            const paymentError = document.querySelector(
-                '[data-test="payment-error-message"]'
-            );
+        const paymentSuccess = document.querySelector(
+            '[data-test="payment-success-message"]'
+        );
 
-            const paymentSuccess = document.querySelector(
-                '[data-test="payment-success-message"]'
-            );
+        const finishButton = document.querySelector(
+            '[data-test="finish"]'
+        );
 
-            const finishButton = document.querySelector(
-                '[data-test="finish"]'
-            );
+        return {
+            currentUrl: window.location.href,
 
-            return {
-                confirmationExists: Boolean(confirmation),
+            confirmationExists: Boolean(confirmation),
 
-                confirmationHTML:
-                    confirmation?.outerHTML ?? null,
+            invoiceExists: Boolean(invoice),
 
-                invoiceExists: Boolean(invoice),
+            invoiceText:
+                invoice?.textContent?.trim() ?? null,
 
-                invoiceText:
-                    invoice?.textContent?.trim() ?? null,
+            paymentError:
+                paymentError?.textContent?.trim() ?? null,
 
-                paymentError:
-                    paymentError?.textContent?.trim() ?? null,
+            paymentSuccess:
+                paymentSuccess?.textContent?.trim() ?? null,
 
-                paymentSuccess:
-                    paymentSuccess?.textContent?.trim() ?? null,
+            finishButtonVisible:
+                Boolean(finishButton?.getClientRects().length),
 
-                finishButtonText:
-                    finishButton?.textContent?.trim() ?? null,
+            finishButtonDisabled:
+                finishButton?.disabled ?? null
+        };
+    });
+}
 
-                currentUrl: window.location.href
-            };
-        });
-    }
 
     // PAYMENT
 
 
-    async payWithCashOnDelivery() {
+
+    // =========================
+    // PAYMENT
+    // =========================
+
+    /**
+     * Select payment method.
+     *
+     * @param {string} method
+     */
+    async selectPaymentMethod(method) {
+
+        const paymentValue = PAYMENT_METHODS[method];
+
+        if (!paymentValue) {
+            throw new Error(
+                `Unsupported payment method: ${method}`
+            );
+        }
 
         await this.paymentMethod.waitForDisplayed();
 
         await this.paymentMethod.selectByAttribute(
             'value',
-            'cash-on-delivery'
+            paymentValue
         );
+    }
+
+    /**
+     * Confirm payment.
+     */
+    async confirmPayment() {
 
         await this.finishButton.waitForClickable();
+
         await this.finishButton.click();
 
         await this.paymentSuccessMessage.waitForDisplayed({
             timeout: 15000,
             timeoutMsg: 'Payment validation failed'
         });
+    }
 
-        await this.finishButton.waitForClickable();
-        await this.finishButton.click();
+    /**
+     * Place the order and return invoice number.
+     *
+     * @returns {Promise<string>}
+     */
+    
+async placeOrder() {
 
-        await this.invoiceNumber.waitForDisplayed({
-            timeout: 20000,
-            timeoutMsg: 'Order confirmation did not appear'
-        });
+    await this.finishButton.waitForClickable();
 
-        const invoiceNumber = (
-            await this.invoiceNumber.getText()
-        ).trim();
+    await this.finishButton.click();
 
-        if (!invoiceNumber) {
-            throw new Error('Invoice number is empty');
+    await this.invoiceNumber.waitForDisplayed({
+        timeout: 20000,
+        timeoutMsg: 'Order confirmation did not appear'
+    });
+
+    const invoiceNumber = await this.getTrimmedText(
+        this.invoiceNumber
+    );
+
+    if (!invoiceNumber) {
+        throw new Error('Invoice number is empty');
+    }
+
+    return invoiceNumber;
+}
+
+
+    /**
+     * Complete payment and return invoice number.
+     *
+     * @param {string} method
+     * @returns {Promise<string>}
+     */
+    
+async pay(method) {
+    try {
+        await this.selectPaymentMethod(method);
+
+        await this.confirmPayment();
+
+        return await this.placeOrder();
+
+    } catch (error) {
+
+        try {
+            const diagnostics =
+                await this.getCheckoutDiagnostics();
+
+            console.error(
+                'CHECKOUT DIAGNOSTICS:',
+                JSON.stringify(diagnostics, null, 2)
+            );
+
+        } catch (diagnosticError) {
+            console.error(
+                'Could not collect checkout diagnostics:',
+                diagnosticError.message
+            );
         }
 
-        return invoiceNumber;
+        throw error;
     }
+}
+
+
 
 
 }
