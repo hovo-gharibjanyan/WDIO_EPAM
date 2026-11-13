@@ -29,6 +29,21 @@ class ProductsPage extends BasePage {
         );
 
         const productElements = await $$('[data-test="product-name"]');
+        const matchingProducts = await browser.execute((name) => {
+            return [...document.querySelectorAll(
+                '[data-test="product-name"]'
+            )]
+                .filter(el => el.textContent.trim() === name)
+                .map(el => ({
+                    name: el.textContent.trim(),
+                    url: el.closest('a')?.href ?? null
+                }));
+        }, productName);
+
+        console.log(
+            'MATCHING PRODUCTS:',
+            JSON.stringify(matchingProducts, null, 2)
+        );
 
         for (const element of productElements) {
 

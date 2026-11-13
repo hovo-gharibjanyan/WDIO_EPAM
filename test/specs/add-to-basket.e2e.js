@@ -38,7 +38,7 @@ describe('Add a product to the basket', () => {
             await ProductsPage.open();
 
             assert.strictEqual(
-                await CartPage.getHeaderCount(),
+                await CartPage.header.getCartCount(),
                 0
             );
 
@@ -55,14 +55,14 @@ describe('Add a product to the basket', () => {
                 await ProductDetailsPage.setQuantity(initial);
                 await ProductDetailsPage.addToCart();
 
-                await CartPage.waitForHeaderCount(initial);
+                await CartPage.header.waitForCartCount(initial);
 
                 await ProductsPage.open();
             }
 
             // Check the Given condition
             assert.strictEqual(
-                await CartPage.getHeaderCount(),
+                await CartPage.header.getCartCount(),
                 initial
             );
 
@@ -77,10 +77,10 @@ describe('Add a product to the basket', () => {
             await ProductDetailsPage.addToCart();
 
             // Check the counter from the Then condition
-            await CartPage.waitForHeaderCount(expected);
+            await CartPage.header.waitForCartCount(expected);
 
             chaiExpect(
-                await CartPage.getHeaderCount()
+                await CartPage.header.getCartCount()
             ).to.equal(expected);
 
             // Open the basket and check its contents

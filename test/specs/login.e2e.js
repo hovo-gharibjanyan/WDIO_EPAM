@@ -30,6 +30,7 @@ describe('Sign in with a registered user', () => {
       const credentials = getUserByAlias(user);
 
       // 2. Open login page
+      await LoginPage.open();
       await LoginPage.waitForLoaded();
 
       assert.isTrue(

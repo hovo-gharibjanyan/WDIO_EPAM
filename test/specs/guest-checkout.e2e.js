@@ -28,17 +28,15 @@ describe('Complete checkout as a guest', () => {
 
     await ProductsPage.open();
 
-    const signInLink = $('[data-test="nav-sign-in"]');
-
-    await signInLink.waitForDisplayed();
+    await ProductsPage.header.signInLink.waitForDisplayed();
 
     assert.isTrue(
-      await signInLink.isDisplayed(),
+      await ProductsPage.header.isGuest(),
       'User must not be signed in'
     );
 
     assert.strictEqual(
-      await CartPage.getHeaderCount(),
+      await CartPage.header.getCartCount(),
       0,
       'Cart should be empty initially'
     );
@@ -56,7 +54,7 @@ describe('Complete checkout as a guest', () => {
 
     await ProductDetailsPage.addToCart();
 
-    await CartPage.waitForHeaderCount(1);
+    await CartPage.header.waitForCartCount(1);
 
     // =========================
     // STEP 3: CHECK BASKET

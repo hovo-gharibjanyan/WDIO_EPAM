@@ -1,48 +1,29 @@
+
 import BasePage from './base.page.js';
 
 class CartPage extends BasePage {
 
-    get cartCounter() {
-        return $('[data-test="cart-quantity"]');
+    constructor() {
+        super('/checkout');
     }
 
-    async open() {
-        await super.open('/checkout');
+    get productQuantityInputs() {
+        return $$('app-cart [data-test="product-quantity"]');
     }
 
-    async getHeaderCount() {
-        if (!(await this.cartCounter.isExisting())) {
-            return 0;
-        }
-
-        return Number(
-            (await this.cartCounter.getText()).trim()
-        );
+    get productTitles() {
+        return $$('app-cart [data-test="product-title"]');
     }
 
-    async waitForHeaderCount(expectedCount) {
-        await browser.waitUntil(
-            async () => {
-                const count = await this.getHeaderCount();
 
-                return count === expectedCount;
-            },
-            {
-                timeout: 15000,
-                timeoutMsg: `Cart counter did not become ${expectedCount}`
-            }
-        );
+    get proceedButton() {
+        return $('[data-test="proceed-1"]');
     }
-
 
     async getTotalQuantity() {
-
         await browser.waitUntil(
             async () => {
-                const inputs = await $$(
-                    'app-cart [data-test="product-quantity"]'
-                );
-
+                const inputs = await this.productQuantityInputs;
                 return inputs.length > 0;
             },
             {
@@ -51,15 +32,12 @@ class CartPage extends BasePage {
             }
         );
 
-        const inputs = await $$(
-            'app-cart [data-test="product-quantity"]'
-        );
+        const inputs = await this.productQuantityInputs;
 
         let total = 0;
 
         for (const input of inputs) {
             const quantity = Number(await input.getValue());
-
             total += quantity;
         }
 
@@ -68,27 +46,40 @@ class CartPage extends BasePage {
 
 
     async getProductNames() {
-        const elements = await $$(
-            'app-cart [data-test="product-title"]'
+
+        await browser.waitUntil(
+            async () => {
+                const elements = await this.productTitles;
+
+                if (elements.length === 0) {
+                    return false;
+                }
+
+                return await elements[0].isDisplayed();
+            },
+            {
+                timeout: 15000,
+                timeoutMsg: 'Cart product names did not load'
+            }
         );
 
+        const elements = await this.productTitles;
         const names = [];
 
         for (const element of elements) {
-            names.push((await element.getText()).trim());
+            names.push(await this.getTrimmedText(element));
         }
 
         return names;
     }
 
 
+
+
     async proceedToCheckout() {
-        const button = $('[data-test="proceed-1"]');
-
-        await button.waitForClickable();
-        await button.click();
+        await this.proceedButton.waitForClickable();
+        await this.proceedButton.click();
     }
-
 }
 
 export default new CartPage();
