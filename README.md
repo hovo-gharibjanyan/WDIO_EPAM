@@ -40,8 +40,19 @@ The framework automates the Module 2 scenarios covering:
 ```text
 WDIO_EPAM/
 ├── features/
-│   └── practice_software_testing.feature
+│   ├── catalog.feature
+│   ├── cart-and-checkout.feature
+│   ├── account.feature
+│   └── favorites.feature
+│
 ├── test/
+│   ├── components/
+│   │   ├── header.component.js
+│   │   ├── search.component.js
+│   │   ├── sort.component.js
+│   │   ├── category-filter.component.js
+│   │   └── pagination.component.js
+│   │
 │   ├── pageobjects/
 │   │   ├── base.page.js
 │   │   ├── products.page.js
@@ -51,12 +62,18 @@ WDIO_EPAM/
 │   │   ├── login.page.js
 │   │   ├── account.page.js
 │   │   └── favorites.page.js
+│   │
 │   ├── specs/
-│   │   └── *.e2e.js
+│   │   ├── smoke/
+│   │   ├── catalog/
+│   │   ├── cart-and-checkout/
+│   │   ├── account/
+│   │   └── favorites/
+│   │
 │   └── utils/
 │       ├── feature-data.js
 │       └── test-users.js
-├── .env                 # Local only; do not commit
+│
 ├── .gitignore
 ├── package.json
 ├── wdio.conf.js
@@ -93,17 +110,24 @@ The expected full name in the **Sign in with a registered user** scenario is def
 
 ## Run tests
 
-Run the full configured WDIO suite:
+# All tests
+npm run wdio
 
-```bash
-npx wdio run ./wdio.conf.js
-```
+# Smoke tests
+npx wdio run ./wdio.conf.js --spec "./test/specs/smoke/*.js"
 
-Run a single specification:
+# Catalog tests
+npx wdio run ./wdio.conf.js --spec "./test/specs/catalog/*.js"
 
-```bash
-npx wdio run ./wdio.conf.js --spec ./test/specs/product-details.e2e.js
-```
+# Cart and checkout
+npx wdio run ./wdio.conf.js --spec "./test/specs/cart-and-checkout/*.js"
+
+# Account tests
+npx wdio run ./wdio.conf.js --spec "./test/specs/account/*.js"
+
+# Favorites tests
+npx wdio run ./wdio.conf.js --spec "./test/specs/favorites/*.js"
+
 
 Other examples:
 
