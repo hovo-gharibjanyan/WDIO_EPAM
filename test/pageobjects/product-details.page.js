@@ -3,6 +3,30 @@ import BasePage from './base.page.js';
 
 class ProductDetailsPage extends BasePage {
 
+
+    /**
+     * Open product details by ID.
+     *
+     * @param {string} productId
+     */
+    async openById(productId) {
+
+        if (typeof productId !== 'string' || !productId.trim()) {
+            throw new Error('Product ID must be a non-empty string');
+        }
+
+        const path =
+            `/product/${encodeURIComponent(productId.trim())}`;
+
+        await super.open(path);
+
+        await this.productName.waitForDisplayed({
+            timeout: 10000,
+            timeoutMsg: `Product ${productId} did not load`
+        });
+    }
+
+
     // =========================
     // PRODUCT LOCATORS
     // =========================

@@ -1,4 +1,3 @@
-
 import {
   assert,
   expect as chaiExpect,
@@ -48,5 +47,34 @@ describe('View product details', () => {
     });
 
   }
+
+  it('should open product details by ID', async () => {
+
+    const { product } = testCases[0];
+
+    // Open product from catalog
+    await ProductsPage.open();
+    await ProductsPage.openProductByName(product);
+
+    // Get actual product ID from URL
+    const currentUrl = await ProductDetailsPage.getCurrentUrl();
+
+    const productId = new URL(currentUrl)
+      .pathname
+      .split('/')
+      .filter(Boolean)
+      .at(-1);
+
+    assert.isNotEmpty(productId);
+
+    // Open the same product directly by ID
+    await ProductDetailsPage.openById(productId);
+
+    // Verify correct product
+    const actualName = await ProductDetailsPage.getName();
+
+    chaiExpect(actualName).to.equal(product);
+  });
+
 
 });
