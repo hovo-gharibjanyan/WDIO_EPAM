@@ -5,14 +5,14 @@ import {
   should
 } from 'chai';
 
-import { getScenarioExamples } from '../utils/feature-data.js';
-import { getUserByAlias } from '../utils/test-users.js';
+import { getScenarioExamples } from '../../utils/feature-data.js';
+import { getUserByAlias } from '../../utils/test-users.js';
 
-import LoginPage from '../pageobjects/login.page.js';
-import AccountPage from '../pageobjects/account.page.js';
-import ProductsPage from '../pageobjects/products.page.js';
-import ProductDetailsPage from '../pageobjects/product-details.page.js';
-import FavoritesPage from '../pageobjects/favorites.page.js';
+import LoginPage from '../../pageobjects/login.page.js';
+import AccountPage from '../../pageobjects/account.page.js';
+import ProductsPage from '../../pageobjects/products.page.js';
+import ProductDetailsPage from '../../pageobjects/product-details.page.js';
+import FavoritesPage from '../../pageobjects/favorites.page.js';
 
 should();
 

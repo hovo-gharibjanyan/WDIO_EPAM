@@ -1,6 +1,6 @@
 
 import { assert, expect as chaiExpect } from 'chai';
-import ProductsPage from '../pageobjects/products.page.js';
+import ProductsPage from '../../pageobjects/products.page.js';
 
 describe('Products Page', () => {
 

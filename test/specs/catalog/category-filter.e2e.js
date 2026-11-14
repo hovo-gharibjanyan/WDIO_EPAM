@@ -1,9 +1,9 @@
 
 import { assert, expect as chaiExpect, should } from 'chai';
-import { getScenarioExamples } from '../utils/feature-data.js';
+import { getScenarioExamples } from '../../utils/feature-data.js';
 
-import ProductsPage from '../pageobjects/products.page.js';
-import ProductDetailsPage from '../pageobjects/product-details.page.js';
+import ProductsPage from '../../pageobjects/products.page.js';
+import ProductDetailsPage from '../../pageobjects/product-details.page.js';
 
 should();
 

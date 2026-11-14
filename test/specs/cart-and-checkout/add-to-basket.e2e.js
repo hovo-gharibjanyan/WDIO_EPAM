@@ -4,17 +4,55 @@ import {
     should
 } from 'chai';
 
-import { getScenarioExamples } from '../utils/feature-data.js';
+import { getScenarioExamples } from '../../utils/feature-data.js';
 
-import ProductsPage from '../pageobjects/products.page.js';
-import ProductDetailsPage from '../pageobjects/product-details.page.js';
-import CartPage from '../pageobjects/cart.page.js';
+import ProductsPage from '../../pageobjects/products.page.js';
+import ProductDetailsPage from '../../pageobjects/product-details.page.js';
+import CartPage from '../../pageobjects/cart.page.js';
 
 should();
 
 const testCases = getScenarioExamples(
     'Add a product to the basket'
 );
+
+
+async function waitForCartCountWithDiagnostics(expectedCount) {
+    try {
+        await CartPage.header.waitForCartCount(expectedCount);
+    } catch (error) {
+        const actualCount = await CartPage.header.getCartCount();
+
+        const details = await browser.execute(() => ({
+            url: window.location.href,
+
+            product: document.querySelector(
+                '[data-test="product-name"]'
+            )?.textContent?.trim() ?? null,
+
+            quantity: document.querySelector(
+                '[data-test="quantity"]'
+            )?.value ?? null,
+
+            addButtonDisabled: document.querySelector(
+                '[data-test="add-to-cart"]'
+            )?.disabled ?? null,
+
+            notifications: [...document.querySelectorAll(
+                '.toast, [role="alert"]'
+            )].map(el => el.textContent.trim()).filter(Boolean)
+        }));
+
+        console.error('CART DIAGNOSTICS:', JSON.stringify({
+            expectedCount,
+            actualCount,
+            ...details
+        }, null, 2));
+
+        throw error;
+    }
+}
+
 
 describe('Add a product to the basket', () => {
 
@@ -55,7 +93,7 @@ describe('Add a product to the basket', () => {
                 await ProductDetailsPage.setQuantity(initial);
                 await ProductDetailsPage.addToCart();
 
-                await CartPage.header.waitForCartCount(initial);
+                await waitForCartCountWithDiagnostics(initial);
 
                 await ProductsPage.open();
             }
@@ -77,7 +115,7 @@ describe('Add a product to the basket', () => {
             await ProductDetailsPage.addToCart();
 
             // Check the counter from the Then condition
-            await CartPage.header.waitForCartCount(expected);
+            await waitForCartCountWithDiagnostics(expected);
 
             chaiExpect(
                 await CartPage.header.getCartCount()

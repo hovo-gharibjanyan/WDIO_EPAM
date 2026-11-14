@@ -4,8 +4,8 @@ import {
     should
 } from 'chai';
 
-import { getScenarioExamples } from '../utils/feature-data.js';
-import ProductsPage from '../pageobjects/products.page.js';
+import { getScenarioExamples } from '../../utils/feature-data.js';
+import ProductsPage from '../../pageobjects/products.page.js';
 
 should();
 

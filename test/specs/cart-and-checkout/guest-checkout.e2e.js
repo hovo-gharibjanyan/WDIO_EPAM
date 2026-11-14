@@ -5,10 +5,10 @@ import {
   should
 } from 'chai';
 
-import ProductsPage from '../pageobjects/products.page.js';
-import ProductDetailsPage from '../pageobjects/product-details.page.js';
-import CartPage from '../pageobjects/cart.page.js';
-import CheckoutPage from '../pageobjects/checkout.page.js';
+import ProductsPage from '../../pageobjects/products.page.js';
+import ProductDetailsPage from '../../pageobjects/product-details.page.js';
+import CartPage from '../../pageobjects/cart.page.js';
+import CheckoutPage from '../../pageobjects/checkout.page.js';
 
 should();
 
